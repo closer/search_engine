@@ -1,9 +1,9 @@
 (function() {
-  var PageContent, Schema, app, express, mongoose;
+  var PageContent, PageContentSchema, Schema, app, express, mongoose;
   mongoose = require("mongoose");
   mongoose.connect('mongodb://localhost/spider');
   Schema = mongoose.Schema;
-  PageContent = new Schema({
+  PageContentSchema = new Schema({
     url: {
       type: String
     },
@@ -14,6 +14,7 @@
       type: String
     }
   });
+  PageContent = mongoose.model('PageContent', PageContentSchema);
   express = require("express");
   app = module.exports = express.createServer();
   app.configure(function() {
@@ -38,13 +39,21 @@
   });
   app.get("/", function(req, res) {
     return res.render("index", {
-      title: "Express"
+      title: "Search Engine"
     });
   });
   app.get("/search", function(req, res) {
-    console.log(req.params);
-    return res.render('search', {
-      title: "Search Results"
+    var keyword;
+    keyword = req.param('k');
+    return PageContent.find({
+      title: new RegExp(keyword)
+    }, function(err, docs) {
+      console.log(docs);
+      return res.render('search', {
+        title: "Search Results",
+        keyword: keyword,
+        results: docs
+      });
     });
   });
   app.listen(8000);

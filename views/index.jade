@@ -1,2 +1,11 @@
-h1= title
-p Welcome to #{title}
+h1 Search Engine
+form
+  input(type="text", name="k", value=keyword)
+  input(type="submit", value="search")
+-if(keyword) {
+  p="keyword: "+keyword
+  ul
+    - results.forEach(function(result){
+      li= result.title
+    - })
+- }

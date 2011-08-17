@@ -8,6 +8,7 @@ PageContentSchema = new Schema
   url   : { type: String }
   title : { type: String }
   body  : { type: String }
+  words : { type: Array  }
 
 PageContent = mongoose.model('PageContent', PageContentSchema)
 
@@ -32,16 +33,17 @@ app.configure "production", ->
   app.use express.errorHandler()
 
 app.get "/", (req, res) ->
-  res.render "index", title: "Search Engine"
-
-app.get "/search", (req, res) ->
   keyword = req.param('k')
-  PageContent.find { title : new RegExp(keyword) }, (err, docs) ->
-    console.log docs
-    res.render 'search'
-      title: "Search Results"
-      keyword: keyword
-      results: docs
+  if !keyword
+    res.render 'index'
+      keyword: ''
+      results: []
+  else
+    PageContent.find { words : [keyword] }, (err, docs) ->
+      console.log docs
+      res.render 'index'
+        keyword: keyword
+        results: docs
 
 app.listen 8000
 console.log "Express server listening on port %d in %s mode", app.address().port, app.settings.env

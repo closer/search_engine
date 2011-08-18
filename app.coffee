@@ -1,16 +1,3 @@
-mongoose = require "mongoose"
-
-mongoose.connect 'mongodb://localhost/spider'
-
-Schema = mongoose.Schema
-
-PageContentSchema = new Schema
-  url   : { type: String }
-  title : { type: String }
-  body  : { type: String }
-
-PageContent = mongoose.model('PageContent', PageContentSchema)
-
 express = require("express")
 app = module.exports = express.createServer()
 app.configure ->
@@ -23,10 +10,9 @@ app.configure ->
   app.use express.static(__dirname + "/public")
 
 app.configure "development", ->
-  app.use express.errorHandler(
+  app.use express.errorHandler
     dumpExceptions: true
     showStack: true
-  )
 
 app.configure "production", ->
   app.use express.errorHandler()

@@ -10,5 +10,5 @@ PageContentSchema = new Schema
   body  : { type: String }
   words : { type: Array }
 
-PageContent = mongoose.model('PageContent', PageContentSchema)
+exports.PageContent = mongoose.model('PageContent', PageContentSchema)
 

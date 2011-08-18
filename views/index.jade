@@ -3,7 +3,8 @@ form
   input(type="text", name="k", value=keyword)
   input(type="submit", value="search")
 -if(keyword) {
-  p="keyword: "+keyword
+  p="keyword: " + keyword
+  p="keywords: " + keywords.join(' | ')
   ul
     - results.forEach(function(result){
       li= result.title

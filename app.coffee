@@ -1,4 +1,7 @@
 PageContent = require('./model').PageContent
+TinySegmenter = require('./tiny_segmenter').TinySegmenter
+
+seg = new TinySegmenter
 
 express = require("express")
 app = module.exports = express.createServer()
@@ -21,15 +24,17 @@ app.configure "production", ->
 
 app.get "/", (req, res) ->
   keyword = req.param('k')
+  keywords = seg.segment keyword
   if !keyword
     res.render 'index'
       keyword: ''
+      keywords: keywords
       results: []
   else
-    PageContent.find { words : [keyword] }, (err, docs) ->
-      console.log docs
+    PageContent.find { words : keywords }, (err, docs) ->
       res.render 'index'
         keyword: keyword
+        keywords: keywords
         results: docs
 
 app.listen 8000

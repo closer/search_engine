@@ -1,8 +1,6 @@
--if(keyword) {
-  p="keyword: " + keyword
+- if (keyword)
   p="keywords: " + keywords.join(' | ')
   ul
     - results.forEach(function(result){
       li= result.title
     - })
-- }

@@ -1,5 +1,15 @@
+_ = require 'underscore'
+
 PageContent = require('./model').PageContent
 TinySegmenter = require('./tiny_segmenter').TinySegmenter
+
+IGNORE_CHARCTORS = _.flatten [
+  [' ', '　'],
+  [ '。', '、', '・', '･'],
+  [',', '.', '"', "'"],
+  ['で', 'に', 'を', 'は', 'の', 'が']]
+
+console.log IGNORE_CHARCTORS
 
 seg = new TinySegmenter
 
@@ -25,20 +35,38 @@ app.configure "production", ->
 app.get "/", (req, res) ->
   keyword = req.param('k')
   ajax = req.param('ajax') == "true"
+
+  console.log '----------------------------'
+
   keywords = seg.segment keyword
-  if !keyword
+  console.log keywords
+
+  keywords = _.map keywords, (word)->
+    return word.replace(/[\s]/g, '')
+  console.log keywords
+
+  keywords = keywords.sort()
+  console.log keywords
+
+  keywords = _.difference(keywords, IGNORE_CHARCTORS)
+  console.log keywords
+
+  keywords = _.uniq(keywords)
+  console.log keywords
+
+  keywords = _.compact keywords
+  console.log keywords
+
+  callback = (err, docs)->
     res.render 'index'
       layout: !ajax
-      keyword: ''
+      keyword: keyword
       keywords: keywords
-      results: []
+      results: docs
+  if !keyword
+    callback(null, [])
   else
-    PageContent.find { words : keywords }, (err, docs) ->
-      res.render 'index'
-        layout: !ajax
-        keyword: keyword
-        keywords: keywords
-        results: docs
+    PageContent.find { words : keywords }, callback
 
 app.listen 8000
 console.log "Express server listening on port %d in %s mode", app.address().port, app.settings.env

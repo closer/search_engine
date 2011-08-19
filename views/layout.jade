@@ -1,20 +1,27 @@
-!!!
+!!!5
 html
   head
     title Search Engine
     link(rel='stylesheet', href='/stylesheets/style.css')
-    script(type='text/javascript', src='/javascripts/jQuery.js')
-    script(type='text/javascript', src='/javascripts/jQuery.history.js')
+    script(type='text/javascript', src='/javascripts/jquery.js')
+    script(type='text/javascript', src='/javascripts/jquery.history.js')
     :coffeescript
+      $.search = (path)->
+        console.log path
+        $.History.go path
+        $('#results').load "#{path}&ajax=true"
+        return
+
       jQuery ($)->
-        $("#search input[type='text']").keydown (e)->
-          $.
-          $('#results').load "/?#{$(this).serialize()}&ajax=true"
-          return
+        $.search path.replace('#', '') if path = window.location.hash
+        $('#search').submit (e)->
+          $.search "/?#{$(this).serialize()}"
+          return false
         return
   body
-    h1 Search Engine
+    h1
+      a(href='/') Search Engine
     form#search
-      input(type="text", name="k", value=keyword)
+      input(type="text", name="k", value=keyword, placeholder='Enter keywords here.')
       input(type="submit", value="search")
     #results!= body

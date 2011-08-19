@@ -24,15 +24,18 @@ app.configure "production", ->
 
 app.get "/", (req, res) ->
   keyword = req.param('k')
+  ajax = req.param('ajax') == "true"
   keywords = seg.segment keyword
   if !keyword
     res.render 'index'
+      layout: !ajax
       keyword: ''
       keywords: keywords
       results: []
   else
     PageContent.find { words : keywords }, (err, docs) ->
       res.render 'index'
+        layout: !ajax
         keyword: keyword
         keywords: keywords
         results: docs

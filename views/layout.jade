@@ -3,4 +3,18 @@ html
   head
     title Search Engine
     link(rel='stylesheet', href='/stylesheets/style.css')
-  body!= body
+    script(type='text/javascript', src='/javascripts/jQuery.js')
+    script(type='text/javascript', src='/javascripts/jQuery.history.js')
+    :coffeescript
+      jQuery ($)->
+        $("#search input[type='text']").keydown (e)->
+          $.
+          $('#results').load "/?#{$(this).serialize()}&ajax=true"
+          return
+        return
+  body
+    h1 Search Engine
+    form#search
+      input(type="text", name="k", value=keyword)
+      input(type="submit", value="search")
+    #results!= body

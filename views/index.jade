@@ -2,5 +2,10 @@
   p="keywords: " + keywords.join(' | ')
   ul
     - results.forEach(function(result){
-      li= result.title
+      li
+        p.title
+          a(href=result.url)
+            =result.title
+        p.description
+          =result.body
     - })

@@ -30,7 +30,6 @@ class Segmenter
       return
     return c
 
-seg = new Segmenter
-c = seg.parse '今日もしないとね。'
-
-console.log c.keywords()
+module.exports =
+  KeywordCollection: KeywordCollection
+  Segmenter: Segmenter

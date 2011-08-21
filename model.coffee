@@ -5,7 +5,7 @@ mongoose.connect 'mongodb://localhost/spider'
 Schema = mongoose.Schema
 
 PageContentSchema = new Schema
-  url   : { type: String }
+  url   : { type: String, index: {unique: true}}
   title : { type: String }
   body  : { type: String }
   words : { type: Array }

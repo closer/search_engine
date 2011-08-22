@@ -3,7 +3,6 @@ MeCab = require 'mecab-binding'
 
 class KeywordCollection
   constructor:->
-
     @__keywords = []
     @__data = []
 

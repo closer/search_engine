@@ -4,9 +4,10 @@ PageContent = require('./model').PageContent
 
 seg = new Segmenter
 
-per_page = 10
+per_page = 50
 
 body_helper = (body, keywords)->
+  return unless body
   results = []
   for word in keywords
     i = body.indexOf(word)
@@ -44,9 +45,10 @@ app.get "/", (req, res) ->
   ajax = req.param('ajax') == "true"
 
   callback = (err, docs)->
-    console.log docs
+    #console.log docs
     res.render 'index'
       layout: !ajax
+      page: page
       keyword: keyword
       keywords: keywords
       results: docs
@@ -57,8 +59,11 @@ app.get "/", (req, res) ->
   else
     c = seg.parse keyword
     keywords = c.keywords()
-    query = PageContent.find {}
-    query.where { words : { $all: keywords }}
+    query = PageContent.find({
+      words : {
+        $all: keywords },
+      status:'success'
+    })
     query.limit per_page
     query.skip page * per_page
     query.exec callback

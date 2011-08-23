@@ -9,6 +9,7 @@ PageContentSchema = new Schema
   title : { type: String }
   body  : { type: String }
   words : { type: Array }
+  status: { type: String }
 
 exports.PageContent = mongoose.model('PageContent', PageContentSchema)
 

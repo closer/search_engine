@@ -1,11 +1,25 @@
 - if (keyword)
   p="keywords: " + keywords.join(' | ')
-  ul
+  p
+    a(href="/?k="+keyword+"&p="+(page-1), onclick="$.search(this.href); return false") << prev
+    [
+    =page
+    ]
+    a(href="/?k="+keyword+"&p="+(page+1), onclick="$.search(this.href); return false") Next >>
+
+  ol
     - results.forEach(function(result){
       li
         p.title
-          a(href=result.url)
+          a(href=result.url, target="_blank")
             =result.title
         p.description
           != body_helper(result.body, keywords)
     - })
+  p
+    a(href="/?k="+keyword+"&p="+(page-1), onclick="$.search(this.href); return false") << prev
+    [
+    =page
+    ]
+    a(href="/?k="+keyword+"&p="+(page+1), onclick="$.search(this.href); return false") Next >>
+

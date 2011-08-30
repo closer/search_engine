@@ -3,7 +3,7 @@ http        = require("http")
 URL         = require('url')
 Iconv       = require("iconv-jp").Iconv
 Buffer      = require('buffer').Buffer
-Segmenter   = require('./mecab_test').Segmenter
+Segmenter   = require('./segmenter').Segmenter
 PageContent = require('./model').PageContent
 
 seg = new Segmenter

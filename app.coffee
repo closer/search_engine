@@ -1,4 +1,4 @@
-Segmenter = require('./mecab_test').Segmenter
+Segmenter = require('./segmenter').Segmenter
 
 PageContent = require('./model').PageContent
 

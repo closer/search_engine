@@ -53,8 +53,6 @@ class Crawler
 
       response.on 'end', =>
 
-        console.log response
-
         unless response.statusCode == 200
           this.crawl_complete(url, 'bad status', response, '')
           return

@@ -45,7 +45,6 @@ app.get "/", (req, res) ->
   ajax = req.param('ajax') == "true"
 
   callback = (err, docs)->
-    #console.log docs
     res.render 'index'
       layout: !ajax
       page: page
@@ -64,8 +63,8 @@ app.get "/", (req, res) ->
         $all: keywords },
       status:'success'
     })
-    query.limit per_page
-    query.skip page * per_page
+    #query.limit per_page
+    #query.skip page * per_page
     query.exec callback
 
 app.listen 8000

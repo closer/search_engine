@@ -1,6 +1,7 @@
 - if (keyword)
   p="keywords: " + keywords.join(' | ')
-  p
+  p="count: " + results.length
+  //p
     a(href="/?k="+keyword+"&p="+(page-1), onclick="$.search(this.href); return false") << prev
     [
     =page
@@ -16,7 +17,7 @@
         p.description
           != body_helper(result.body, keywords)
     - })
-  p
+  //p
     a(href="/?k="+keyword+"&p="+(page-1), onclick="$.search(this.href); return false") << prev
     [
     =page

@@ -6,7 +6,7 @@
       "express": "2.4.3"
     , "stylus": ">= 0.0.1"
     , "jade": ">= 0.0.1"
-    , "mongoose": ">= 1.0"
+    , "mongoose": ">= 2.0"
     , "underscore": ""
     , "iconv-jp": ""
     , "mecab-binding": ""

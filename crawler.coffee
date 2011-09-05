@@ -4,9 +4,15 @@ URL         = require('url')
 Iconv       = require("iconv-jp").Iconv
 Buffer      = require('buffer').Buffer
 Segmenter   = require('./segmenter').Segmenter
-PageContent = require('./model').PageContent
+Page = require('./model').Page
 
 seg = new Segmenter
+
+class Filter
+  constructor: ()->
+
+  url_filter: ()->
+    /^https:/
 
 class Crawler
 
@@ -15,7 +21,7 @@ class Crawler
     @current_connections = []
 
   seed: (url)->
-    PageContent.update { url: url }, { url: url }, { upsert: true }, (err, doc)->
+    Page.update { url: url }, { url: url }, { upsert: true }, (err, doc)->
       #console.log "seed #{url}"
     return
 
@@ -27,7 +33,7 @@ class Crawler
     , 100
 
   crawl_start: ()->
-    query = PageContent.find { body: null, status: null }
+    query = Page.find { body: null, status: null }
     query.limit 1
     query.exec (err, docs)=>
       return if err
@@ -37,12 +43,14 @@ class Crawler
           @current_connections.push url
           this.crawl_per_page url
 
-
   crawl_per_page: (url) ->
+    console.log "crawl #{url}"
+    if url.match(/^https/)
+      console.log ('close')
+      return
     host = URL.parse(url).host
     connection = http.createClient 80, host
 
-    console.log "crawl #{url}"
     request = connection.request 'GET', url, host: host
     request.on 'response', (response)=>
       responseBuffers = []
@@ -120,7 +128,7 @@ class Crawler
       body:  parsed.plain
       words: keywords
       status: status
-    PageContent.update { url :url }, pc, { upsert: true }, ()=>
+    Page.update { url :url }, pc, { upsert: true }, ()=>
       console.log "crawl #{url} : COMPLETE #{status}"
       @current_connections = _(@current_connections).without(url)
 

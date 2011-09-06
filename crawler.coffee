@@ -8,11 +8,20 @@ Page = require('./model').Page
 
 seg = new Segmenter
 
-class Filter
+class URLFilter
+
+  @allow = [
+    /^http:\/\/(www\.)?shinronavi\.com\//
+  ]
+
+  @deny = [
+    /^https:/,
+    /^/
+  ]
+
   constructor: ()->
 
-  url_filter: ()->
-    /^https:/
+  filter: ()->
 
 class Crawler
 

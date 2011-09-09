@@ -37,7 +37,7 @@ module.exports.Spider = class extends Worker
       response.on 'end', =>
 
         unless response.statusCode == 200
-          this.crawl_complete(url, 'bad status', response, '')
+          @crawl_complete(url, 'bad status', response, '')
           return
 
         totalLength = 0
@@ -81,21 +81,21 @@ module.exports.Spider = class extends Worker
           body = ""
           stauts = "failed"
         finally
-          this.crawl_complete(url, status, response, body)
+          @crawl_complete(url, status, response, body)
 
         return
 
     request.end()
     return
 
-  crwal_complete: (url, status, response, body)->
+  crawl_complete: (url, status, response, body)->
     page = new Page
     page.url = url
     page.status = status
     page.body = body
     page.save ()=>
       hp = new HtmlParserQueue
-      hp.page = page
+      hp.page = page.id
       hp.save ()=>
         @finish()
 
@@ -173,7 +173,7 @@ module.exports.LinkTracker = class extends Worker
         page.url = link
         page.save ()->
           new_queue = new SpiderQueue
-          new_queue.page = page
+          new_queue.page = page.id
           new_queue.save ()->
 
 

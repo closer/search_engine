@@ -1,6 +1,7 @@
 class Worker
 
   constructor: ()->
+    console.log 'Initialized'
     @daemon = false
     @working = false
     @intavalId = null
@@ -14,6 +15,7 @@ class Worker
     return
 
   stop: ()->
+    console.log "stop!!!"
     @daemon = false
     clearInterval @intervalId
     @intervalId = null
@@ -32,14 +34,14 @@ class Worker
       .run (err, queue)=>
         unless err
           if queue
-            @work queue, finish
+            @work queue
           else
             @finish()
         else
           console.log err
           @finish()
 
-  work:(queue, finish)-> # abstruct
+  work:(queue)-> # abstruct
     @finish()
 
   finish: ()->

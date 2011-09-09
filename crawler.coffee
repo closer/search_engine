@@ -4,55 +4,21 @@ URL         = require('url')
 Iconv       = require("iconv-jp").Iconv
 Buffer      = require('buffer').Buffer
 Segmenter   = require('./segmenter').Segmenter
-Page = require('./model').Page
+model       = require('./model')
 
-seg = new Segmenter
+Worker = require('./worker').Worker
 
-class URLFilter
+SpiderQueue      = model.SpiderQueue
+HtmlParserQueue  = model.HtmlParserQueue
+LinkTrackerQueue = model.LinkTrackerQueue
 
-  @allow = [
-    /^http:\/\/(www\.)?shinronavi\.com\//
-  ]
+Page  = model.Page
 
-  @deny = [
-    /^https:/,
-    /^/
-  ]
+module.exports.Spider = class extends Worker
+  queue: SpiderQueue
 
-  constructor: ()->
-
-  filter: ()->
-
-class Crawler
-
-  constructor: ()->
-    @max_connection = 1
-    @current_connections = []
-
-  seed: (url)->
-    Page.update { url: url }, { url: url }, { upsert: true }, (err, doc)->
-      #console.log "seed #{url}"
-    return
-
-  crawl: ()->
-    setTimeout ()=>
-      if @max_connection > @current_connections.length
-        this.crawl_start()
-      this.crawl()
-    , 100
-
-  crawl_start: ()->
-    query = Page.find { body: null, status: null }
-    query.limit 1
-    query.exec (err, docs)=>
-      return if err
-      docs.forEach (pc)=>
-        url = pc.url
-        unless err
-          @current_connections.push url
-          this.crawl_per_page url
-
-  crawl_per_page: (url) ->
+  work: (queue)->
+    url = queue.page.url
     console.log "crawl #{url}"
     if url.match(/^https/)
       console.log ('close')
@@ -122,63 +88,92 @@ class Crawler
     request.end()
     return
 
-  crawl_complete:(url, status, res, html)->
-    host = URL.parse(url).host
-    parsed = html_parse(html)
-    c = seg.parse parsed.plain
+  crwal_complete: (url, status, response, body)->
+    page = new Page
+    page.url = url
+    page.status = status
+    page.body = body
+    page.save ()=>
+      hp = new HtmlParserQueue
+      hp.page = page
+      hp.save ()=>
+        @finish()
+
+
+module.exports.HtmlParser = class extends Worker
+  queue: HtmlParserQueue
+  segmenter: new Segmenter
+
+  work: (queue)->
+    page = queue.page
+    parsed = @html_parse(page.body)
+    c = @segmenter.parse parsed.plain
     keywords = c.keywords()
-    links = link_parse html
-    for link in links
-      link = link.replace(/^\/(.*)/, ()-> "http://#{host}/#{RegExp.$1}")
-      this.seed link if link.match(/^http/)
     pc =
       url:   url
       title: parsed.title
       body:  parsed.plain
       words: keywords
       status: status
-    Page.update { url :url }, pc, { upsert: true }, ()=>
+    page.update { url :url }, pc, { upsert: true }, ()=>
       console.log "crawl #{url} : COMPLETE #{status}"
       @current_connections = _(@current_connections).without(url)
 
-doctype_parse = (html)->
-  if m = html.match(/<!doctype[^>]*>/i)
-    m[0]
-  else
-    ""
+  doctype_parse = (html)->
+    if m = html.match(/<!doctype[^>]*>/i)
+      m[0]
+    else
+      ""
 
-tag_reg = (tag="\\w+", opt="ims")->
-  new RegExp("<(#{tag})[^>]*>((.|\\n|\\r)*)<\\/\\1>", opt)
+  tag_reg = (tag="\\w+", opt="ims")->
+    new RegExp("<(#{tag})[^>]*>((.|\\n|\\r)*)<\\/\\1>", opt)
 
-tag_parse = (plain, tag="\\w+", opt="ims")->
-  if m = plain.replace(/[\r\n\s\t]+/, ' ').match(tag_reg(tag, opt))
-    m[2]
-  else
-    ""
+  tag_parse = (plain, tag="\\w+", opt="ims")->
+    if m = plain.replace(/[\r\n\s\t]+/, ' ').match(tag_reg(tag, opt))
+      m[2]
+    else
+      ""
 
-strip_tag = (html)->
-  html = html.replace(/[\s\t\n\r]+/mg, ' ')
-  html = html.replace(tag_reg('script|style|textarea', 'img'), '')
-  html = html.replace(/<img[^>]*alt="([^"]*)"[^>]*>/img, -> " #{RegExp.$1} " )
-  html = html.replace(/<\/?\w*[^>]*>/img, '')
-  html
+  strip_tag = (html)->
+    html = html.replace(/[\s\t\n\r]+/mg, ' ')
+    html = html.replace(tag_reg('script|style|textarea', 'img'), '')
+    html = html.replace(/<img[^>]*alt="([^"]*)"[^>]*>/img, -> " #{RegExp.$1} " )
+    html = html.replace(/<\/?\w*[^>]*>/img, '')
+    html
 
-link_parse = (html)->
-  links = []
-  html.replace /<a[^>]*href="([^"]*)">/g, -> links.push RegExp.$1
-  links
+  link_parse = (html)->
+    links = []
+    html.replace /<a[^>]*href="([^"]*)">/g, -> links.push RegExp.$1
+    links
 
-html_parse = (html)->
-  doctype = doctype_parse(html)
-  title   = tag_parse(html, 'title')
-  body    = tag_parse(html, 'body')
-  plain   = strip_tag(body)
-  return {
-    doctype: doctype
-    title: title
-    plain: plain
-  }
+  html_parse = (html)->
+    doctype = @doctype_parse(html)
+    title   = @tag_parse(html, 'title')
+    body    = @tag_parse(html, 'body')
+    plain   = @strip_tag(body)
+    return {
+      doctype: doctype
+      title: title
+      plain: plain
+    }
 
 
-module.exports.Crawler = Crawler
+module.exports.LinkTracker = class extends Worker
+  queue: LinkTrackerQueue
+
+  work: (queue)->
+    url = queue.page.url
+    html = queue.page.body
+    host = URL.parse(url).host
+    links = @link_parse html
+    for link in links
+      link = link.replace(/^\/(.*)/, ()-> "http://#{host}/#{RegExp.$1}")
+      if link.match(/^http/)
+        page = new Page
+        page.url = link
+        page.save ()->
+          new_queue = new SpiderQueue
+          new_queue.page = page
+          new_queue.save ()->
+
 

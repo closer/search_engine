@@ -71,22 +71,21 @@ app.get "/", (req, res) ->
     c = seg.parse keyword
     keywords = c.keywords()
 
-
     Page
       .where('words').all(keywords)
       .$where('status == "success"')
-      .count()
-      .run (err, c)->
+      .count (err, c)->
         count = c
         waiter.end 'count'
         return
 
     Page
       .where('words').all(keywords)
-      .$where('status == "success"')
+      .$where('status = "success"')
       .limit(per_page)
       .skip(page * per_page)
       .run (err, d)->
+        console.log arguments
         docs = d
         waiter.end 'doc'
         return

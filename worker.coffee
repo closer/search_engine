@@ -1,3 +1,6 @@
+{Page} = require './model'
+
+
 class Worker
 
   constructor: ()->
@@ -5,6 +8,8 @@ class Worker
     @daemon = false
     @working = false
     @intavalId = null
+    @current_page = null
+    @logger = require('./logger').create 'test'
     return
 
   daemonize: ()->
@@ -28,25 +33,42 @@ class Worker
     return
 
   iteration: ()->
-    @queue
-      .findOne({})
-      .populate('page')
-      .run (err, queue)=>
+    query = {}
+    query[@queue] = true
+    Page
+      .findOne(query)
+      .run (err, page)=>
         unless err
-          if queue
-            @work queue
+          if page
+            @current_page = page
+            @work()
           else
             @finish()
         else
           console.log err
           @finish()
 
-  work:(queue)-> # abstruct
+  work:()-> # abstruct
     @finish()
 
   finish: ()->
+    if @current_page
+      @current_queue = null
     @working = false
 
-module.exports.Worker = Worker
 
+Worker.run = ()->
+  instance = new this()
+
+  process.stdin.resume()
+
+  process.on 'SIGINT', ()->
+    instance.stop()
+    process.exit()
+
+  instance.daemonize()
+
+  return instance
+
+module.exports.Worker = Worker
 

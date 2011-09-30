@@ -12,17 +12,10 @@ PageSchema = new Schema
   words : { type: Array, index: true }
   status: { type: String, index: true }
 
-  spider_queue       : { type: Schema.ObjectId, ref: 'SpiderQueue' }
-  html_parser_queue  : { type: Schema.ObjectId, ref: 'HtmlParserQueue' }
-  link_tracker_queue : { type: Schema.ObjectId, ref: 'LinkTrackerQueue' }
-
-QueueSchema = new Schema
-  created_at: { type: Date }
-  page : { type : Schema.ObjectId, ref: 'Page' }
+  spider_queue       : { type: Boolean, index: true }
+  html_parser_queue  : { type: Boolean, index: true }
+  link_tracker_queue : { type: Boolean, index: true }
 
 module.exports =
   Page             : mongoose.model('Page',             PageSchema)
-  SpiderQueue      : mongoose.model('SpiderQueue',      QueueSchema)
-  HtmlParserQueue  : mongoose.model('HtmlParserQueue',  QueueSchema)
-  LinkTrackerQueue : mongoose.model('LinkTrackerQueue', QueueSchema)
 

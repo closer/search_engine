@@ -1,8 +1,9 @@
-Segmenter = require('./segmenter').Segmenter
+{Segmenter} = require './segmenter'
+{Page}      = require './model'
+{Waiter}    = require './callback_waiter'
+express     = require 'express'
 
-Page = require('./model').Page
-
-Waiter = require('./callback_waiter').Waiter
+app = module.exports = express.createServer()
 
 seg = new Segmenter
 
@@ -21,8 +22,6 @@ body_helper = (body, keywords)->
       body.substr(i+word.length, 10))
   results.join('...')
 
-express = require("express")
-app = module.exports = express.createServer()
 app.configure ->
   app.set "views", "#{__dirname}/views"
   app.set "view engine", "jade"
@@ -65,19 +64,19 @@ app.get "/", (req, res) ->
 
     waiter = new Waiter ()-> callback(); return
 
-    waiter.set 'count'
+    #waiter.set 'count'
     waiter.set 'doc'
 
-    c = seg.parse keyword
+    c = seg.parse keyword.replace(/[\s　]/g, '')
     keywords = c.keywords()
 
-    Page
-      .where('words').all(keywords)
-      .$where('status == "success"')
-      .count (err, c)->
-        count = c
-        waiter.end 'count'
-        return
+    # Page
+    #   .where('words').all(keywords)
+    #   .$where('status == "success"')
+    #   .count (err, c)->
+    #     count = c
+    #     waiter.end 'count'
+    #     return
 
     Page
       .where('words').all(keywords)
@@ -85,7 +84,6 @@ app.get "/", (req, res) ->
       .limit(per_page)
       .skip(page * per_page)
       .run (err, d)->
-        console.log arguments
         docs = d
         waiter.end 'doc'
         return

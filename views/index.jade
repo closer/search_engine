@@ -15,7 +15,7 @@
           a(href=result.url, target="_blank")
             =result.title
         p.description
-          != body_helper(result.body, keywords)
+          != body_helper(result.plain, keywords)
     - })
   //p
     a(href="/?k="+keyword+"&p="+(page-1), onclick="$.search(this.href); return false") << prev

@@ -1,0 +1,2 @@
+require('./crawler').HtmlParser.run()
+

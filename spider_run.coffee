@@ -1,0 +1,2 @@
+require('./crawler').Spider.run()
+

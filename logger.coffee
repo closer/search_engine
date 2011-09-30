@@ -1,0 +1,1 @@
+gist-1228673/minimal-logger.coffee
